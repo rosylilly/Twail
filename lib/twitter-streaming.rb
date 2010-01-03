@@ -2,6 +2,7 @@
 
 require 'net/http'
 require 'json'
+require 'uri'
 
 module Twitter
   class Account
@@ -33,7 +34,7 @@ module Twitter
 
     def initialize(prms)
       @option = prms || {}
-      @stream = TwitterStream::Client.new(@option[:username], @option[:password])
+      @stream = TwitterStream.new(@option[:username], @option[:password])
     end
 
     def track(keyword)
