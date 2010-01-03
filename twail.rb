@@ -49,6 +49,11 @@ begin
         }
       end
     }
+    opt.on('-f VAL', '--follow=VAL', 'set follow user (username,username,username...)') { | v |
+        if v
+            options[:followers] = v.split(',')
+        end
+    }
   }.parse!(ARGV)
   ## exception
   raise OptionParser::InvalidOption, "user name is missing" if options[:username].nil?
@@ -66,10 +71,10 @@ stream = Twitter::Stream.new(options)
 
 if !options[:list].nil?
   list = Twitter::List.new(options[:list][:user], options[:list][:slug], options[:username], options[:password])
-  stream.follow(options[:followers])
+  options[:followers] = list.membership
 
   puts 'Start Streaming...'
-  stream.follow(list.membership)
+  stream.follow(options[:followers])
 elsif !options[:keyword].nil?
   puts 'Start Streaming...'
   stream.track(options[:keyword])
