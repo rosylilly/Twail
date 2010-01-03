@@ -16,7 +16,8 @@ options = {
   :username => nil,
   :password => nil,
   :autofollow => true,
-  :followers => []
+  :followers => [],
+  :followers_str => []
 }
 
 # cmdline opt
@@ -51,7 +52,7 @@ begin
     }
     opt.on('-f VAL', '--follow=VAL', 'set follow user (username,username,username...)') { | v |
         if v
-            options[:followers] = v.split(',')
+            options[:followers_str] = v.split(',')
         end
     }
   }.parse!(ARGV)
@@ -68,8 +69,11 @@ options[:password] = hl.ask('password> ') { | inp | inp.echo = '*' }
 
 # Start Stream
 stream = Twitter::Stream.new(options)
-
-if !options[:list].nil?
+if !options[:followers_str].empty?
+  options[:followers] = options[:followers_str].map{ |u| a = Twitter::User.new(u);p a;a.user_id }
+  puts 'Start Streaming...'
+  stream.follow(options[:followers])
+elsif !options[:list].nil?
   list = Twitter::List.new(options[:list][:user], options[:list][:slug], options[:username], options[:password])
   options[:followers] = list.membership
 

@@ -29,6 +29,30 @@ module Twitter
     end
   end
 
+  class User
+    def initialize(usr) 
+      if /^[0-9]+$/ =~ usr.to_s
+        @user_id = usr.to_i
+        Net::HTTP.start('twitter.com') do |h|
+          r = h.get('/statuses/user_timeline/' + @user_id.to_s + '.rss')
+          if /<title>Twitter \/ (.+)<\/title>/ =~ r.body
+            @username = $1
+          end
+        end 
+      else
+        @username = usr
+        Net::HTTP.start('twitter.com') do |h|
+          r = h.get('/' + usr)
+          if /<a href="\/statuses\/user_timeline\/([0-9]+).rss" class="xref rss profile-rss" rel="alternate" type="application\/rss\+xml">/ =~ r.body
+            @user_id = $1.to_i
+          end
+        end
+      end
+    end
+
+    attr_reader :user_id, :username
+  end
+
   class Stream
     require 'twitterstream'
 
@@ -75,7 +99,7 @@ module Twitter
           res = nil
         end
         @info = res
-        
+
         return res
       end
     end
@@ -108,3 +132,5 @@ module Twitter
     end
   end
 end
+
+# vim: tabstop=2 shiftwidth=2 softtabstop=4
