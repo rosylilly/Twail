@@ -61,16 +61,12 @@ module Twitter
       @stream = TwitterStream.new(@option[:username], @option[:password])
     end
 
-    def track(keyword)
-      @stream.track(keyword) do | status |
-        disp(status)
-      end
+    def track(keyword, &block)
+      @stream.track(keyword, &block)
     end
 
-    def follow(followers)
-      @stream.filter('follow' => followers.join(',')) do | status |
-        disp(status)
-      end
+    def follow(followers, &block)
+      @stream.filter('follow' => followers.join(','), &block)
     end
 
     def disp(status)

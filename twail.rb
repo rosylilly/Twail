@@ -67,19 +67,33 @@ end
 hl = HighLine.new
 options[:password] = hl.ask('password> ') { | inp | inp.echo = '*' }
 
+# set view
+display = proc { | status |
+  next unless status['text']
+  user = status['user']['screen_name']
+  user = user[0...12]+'...' if user.size > 15
+
+  text = status['text']
+  text.gsub!(/\@[a-zA-Z0-9_]+/) do | match |
+    "<%= color('#{match}', BOLD) %>"
+  end
+
+  hl.say("<%= color('#{user.ljust(16).gsub('\'',"\\'")}', BOLD) %> : #{text}")
+}
+
 # Start Stream
 stream = Twitter::Stream.new(options)
 if !options[:followers_str].empty?
   options[:followers] = options[:followers_str].map{ |u| a = Twitter::User.new(u);p a;a.user_id }
   puts 'Start Streaming...'
-  stream.follow(options[:followers])
+  stream.follow(options[:followers], &display)
 elsif !options[:list].nil?
   list = Twitter::List.new(options[:list][:user], options[:list][:slug], options[:username], options[:password])
   options[:followers] = list.membership
 
   puts 'Start Streaming...'
-  stream.follow(options[:followers])
+  stream.follow(options[:followers], &display)
 elsif !options[:keyword].nil?
   puts 'Start Streaming...'
-  stream.track(options[:keyword])
+  stream.track(options[:keyword], &display)
 end
